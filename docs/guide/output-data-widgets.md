@@ -335,6 +335,7 @@ To add a CheckboxColumn to the GridView, add it to the [[yii\grid\GridView::$col
 
 ```php
 echo GridView::widget([
+    'id' => 'grid',
     'dataProvider' => $dataProvider,
     'columns' => [
         // ...
@@ -776,4 +777,4 @@ Which generates a [[yii\widgets\Pjax|Pjax]] widget wrapping the
 Further reading
 ---------------
 
-- [Rendering Data in Yii 2 with GridView and ListView](http://www.sitepoint.com/rendering-data-in-yii-2-with-gridview-and-listview/) by Arno Slatius.
+- [Rendering Data in Yii 2 with GridView and ListView](https://www.sitepoint.com/rendering-data-in-yii-2-with-gridview-and-listview/) by Arno Slatius.

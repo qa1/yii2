@@ -1,12 +1,13 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\base;
 
+use yii\base\DynamicModel;
 use yii\base\Model;
 use yiiunit\data\base\InvalidRulesModel;
 use yiiunit\data\base\RulesModel;
@@ -175,6 +176,18 @@ class ModelTest extends TestCase
         $this->assertTrue($speaker->isAttributeSafe('firstName'));
     }
 
+    public function testIsAttributeSafeForIntegerAttribute()
+    {
+        $model = new RulesModel();
+        $model->rules = [
+            [
+                [123456], 'safe',
+            ]
+        ];
+
+        $this->assertTrue($model->isAttributeSafe(123456));
+    }
+
     public function testSafeScenarios()
     {
         $model = new RulesModel();
@@ -310,8 +323,8 @@ class ModelTest extends TestCase
             'lastName' => ['Another one!'],
         ], $speaker->getErrors());
 
-        $this->assertEquals(['Another one!', 'Something is wrong!', 'Totally wrong!'], $speaker->getErrorSummary(true));
-        $this->assertEquals(['Another one!', 'Something is wrong!'], $speaker->getErrorSummary(false));
+        $this->assertEquals(['Something is wrong!', 'Totally wrong!', 'Another one!'], $speaker->getErrorSummary(true));
+        $this->assertEquals(['Something is wrong!', 'Another one!'], $speaker->getErrorSummary(false));
 
         $speaker->clearErrors('firstName');
         $this->assertEquals([
@@ -494,12 +507,21 @@ class ModelTest extends TestCase
             return;
         }
 
-        $model = include 'stub/AnonymousModelClass.php';
+        $model = require __DIR__ . '/stub/AnonymousModelClass.php';
 
         $this->expectException('yii\base\InvalidConfigException');
         $this->expectExceptionMessage('The "formName()" method should be explicitly defined for anonymous models');
 
         $model->formName();
+    }
+
+    public function testExcludeEmptyAttributesFromSafe()
+    {
+        $model = new DynamicModel(['' => 'emptyFieldValue']);
+        $model->addRule('', 'safe');
+
+        $this->assertEquals([], $model->safeAttributes());
+        $this->assertEquals([''], $model->attributes());
     }
 }
 
@@ -514,7 +536,7 @@ class ComplexModel1 extends Model
     {
         return [
             [['id'], 'required', 'except' => 'administration'],
-            [['name', 'description'], 'filter', 'filter' => 'trim'],
+            [['name', 'description'], 'filter', 'filter' => 'trim', 'skipOnEmpty' => true],
             [['is_disabled'], 'boolean', 'on' => 'administration'],
         ];
     }

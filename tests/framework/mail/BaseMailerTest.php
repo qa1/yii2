@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\mail;
@@ -45,7 +45,7 @@ class BaseMailerTest extends TestCase
      */
     protected function getTestFilePath()
     {
-        return Yii::getAlias('@yiiunit/runtime') . DIRECTORY_SEPARATOR . basename(get_class($this)) . '_' . getmypid();
+        return Yii::getAlias('@yiiunit/runtime') . DIRECTORY_SEPARATOR . basename(str_replace('\\', DIRECTORY_SEPARATOR, get_class($this))) . '_' . getmypid();
     }
 
     /**

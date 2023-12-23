@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\web;
@@ -10,8 +10,8 @@ namespace yiiunit\framework\web;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\base\UserException;
-use yii\web\Controller;
 use yii\web\ErrorAction;
+use yiiunit\data\controllers\TestController;
 use yiiunit\TestCase;
 
 /**
@@ -119,25 +119,5 @@ Exception: yii\web\NotFoundHttpException', $this->getController()->runAction('er
 
         $ds = preg_quote(DIRECTORY_SEPARATOR, '\\');
         $this->expectExceptionMessageRegExp('#The view file does not exist: .*?views' . $ds . 'layouts' . $ds . 'non-existing.php#');
-    }
-}
-
-class TestController extends Controller
-{
-    private $actionConfig;
-
-    public function setActionConfig($config = [])
-    {
-        $this->actionConfig = $config;
-    }
-
-    public function actions()
-    {
-        return [
-            'error' => array_merge([
-                'class' => ErrorAction::className(),
-                'view' => '@yiiunit/data/views/error.php',
-            ], $this->actionConfig),
-        ];
     }
 }

@@ -1,7 +1,7 @@
 アクティブ・レコード
 ====================
 
-[アクティブ・レコード](http://ja.wikipedia.org/wiki/Active_Record) は、データベースに保存されているデータにアクセスするために、
+[アクティブ・レコード](https://ja.wikipedia.org/wiki/Active_Record) は、データベースに保存されているデータにアクセスするために、
 オブジェクト指向のインタフェイスを提供するものです。
 アクティブ・レコード・クラスはデータベース・テーブルと関連付けられます。
 アクティブ・レコードのインスタンスはそのテーブルの行に対応し、アクティブ・レコードのインスタンスの *属性* がその行にある特定のカラムの値を表現します。
@@ -473,8 +473,8 @@ $post->updateCounters(['view_count' => 1]);
 > HTML フォームでは全ての値が文字列として表現されるからです。
 > 入力値が正しい型、例えば整数値となることを保証するために、`['attributeName', 'filter', 'filter' => 'intval']` のように
 > [検証フィルタ](input-validation.md#data-filtering) を適用することが出来ます。
-> このフィルタは、[intval()](http://php.net/manual/ja/function.intval.php), [floatval()](http://php.net/manual/ja/function.floatval.php),
-> [boolval](http://php.net/manual/ja/function.boolval.php) など、PHP の全てのタイプキャスト関数で動作します。
+> このフィルタは、[intval()](https://www.php.net/manual/ja/function.intval.php), [floatval()](https://www.php.net/manual/ja/function.floatval.php),
+> [boolval](https://www.php.net/manual/ja/function.boolval.php) など、PHP の全てのタイプキャスト関数で動作します。
 
 ### デフォルト属性値 <span id="default-attribute-values"></span>
 
@@ -689,7 +689,7 @@ try {
 ```
 
 > Note: 上記のコードでは、PHP 5.x と PHP 7.x との互換性のために、二つの catch ブロックを持っています。
-> `\Exception` は PHP 7.0 以降では、[`\Throwable` インタフェイス](http://php.net/manual/ja/class.throwable.php) を実装しています。
+> `\Exception` は PHP 7.0 以降では、[`\Throwable` インタフェイス](https://www.php.net/manual/ja/class.throwable.php) を実装しています。
 > 従って、あなたのアプリケーションが PHP 7.0 以上しか使わない場合は、`\Exception` の部分を省略することが出来ます。
 
 第二の方法は、トランザクションのサポートが必要な DB 操作を [[yii\db\ActiveRecord::transactions()]]
@@ -743,9 +743,9 @@ class Post extends \yii\db\ActiveRecord
 1. アクティブ・レコード・クラスと関連付けられている DB テーブルに、各行のバージョン番号を保存するカラムを作成します。
    カラムは長倍精度整数 (big integer) タイプでなければなりません (MySQL では `BIGINT DEFAULT 0` です)。
 2. [[yii\db\ActiveRecord::optimisticLock()]] メソッドをオーバーライドして、このカラムの名前を返すようにします。
-3. あなたのモデル・クラスの中で [[\yii\behaviors\OptimisticLockBehavior|OptimisticLockBehavior]] を実装し、受診したリクエストからその値を自動的に解析できるようにします。
-4. ユーザ入力を収集するウェブフォームに、更新されるレコードの現在のバージョン番号を保持する隠しフィールドを追加します。
+3. あなたのモデル・クラスの中で [[\yii\behaviors\OptimisticLockBehavior|OptimisticLockBehavior]] を実装し、受信したリクエストからその値を自動的に解析できるようにします。
    [[\yii\behaviors\OptimisticLockBehavior|OptimisticLockBehavior]] が検証を処理すべきですので、バージョンの属性は検証規則から削除します。
+4. ユーザ入力を収集するウェブフォームに、更新されるレコードの現在のバージョン番号を保持する隠しフィールドを追加します。
 5. アクティブ・レコードを使って行の更新を行うコントローラ・アクションにおいて、[[\yii\db\StaleObjectException]] 例外を捕捉して、
    衝突を解決するために必要なビジネス・ロジック (例えば、変更をマージしたり、データの陳腐化を知らせたり) を実装します。
 
@@ -789,10 +789,21 @@ use yii\behaviors\OptimisticLockBehavior;
 public function behaviors()
 {
     return [
-        OptimisticLockBehavior::className(),
+        OptimisticLockBehavior::class,
     ];
 }
+
+public function optimisticLock()
+{
+    return 'version';
+}
+
 ```
+> Note: [[\yii\behaviors\OptimisticLockBehavior|OptimisticLockBehavior]] は、ユーザが正しいバージョン番号を送信したときにだけ
+> レコードが保存されるという事を保証します。そして、そのために、[[\yii\web\Request::getBodyParam()|getBodyParam()]] の結果を直接に解析します。
+> そこで、あなたのモデル・クラスを拡張して、親モデルで第2段階を行い、ビヘイビアのアタッチ(第3段階)を子モデルで行うようにすると便利でしょう。
+> そうすれば、一方を内部使用のためだけのインスタンスとして使うことが出来、他方をエンド・ユーザの入力の受信に責任を持つモデルとしてコントローラと結びつける事が出来ます。
+> もう一つのやり方としては、[[\yii\behaviors\OptimisticLockBehavior::$value|value]] プロパティを構成して独自のロジックを実装することも可能です。
 
 
 ## リレーショナル・データを扱う <span id="relational-data"></span>
@@ -816,7 +827,7 @@ class Customer extends ActiveRecord
 
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 }
 
@@ -826,7 +837,7 @@ class Order extends ActiveRecord
 
     public function getCustomer()
     {
-        return $this->hasOne(Customer::className(), ['id' => 'customer_id']);
+        return $this->hasOne(Customer::class, ['id' => 'customer_id']);
     }
 }
 ```
@@ -844,7 +855,7 @@ class Order extends ActiveRecord
   上記の例では、リレーションの宣言において、顧客は複数の注文を持ち得るが、一方、注文は一人の顧客しか持たない、ということが容易に読み取れます。
 - 関連するアクティブ・レコード・クラスの名前: [[yii\db\ActiveRecord::hasMany()|hasMany()]] または [[yii\db\ActiveRecord::hasOne()|hasOne()]]
   の最初のパラメータとして指定されます。
-  クラス名を取得するのに `Xyz::className()` を呼ぶのが推奨されるプラクティスです。
+  クラス名を取得するのに `Xyz::class` を呼ぶのが推奨されるプラクティスです。
   そうすれば、IDE の自動補完のサポートを得ることことが出来るだけでなく、コンパイル段階でエラーを検出することが出来ます。
 - 二つの型のデータ間のリンク: 二つの型のデータの関連付けに用いられるカラムを指定します。
   配列の値は主たるデータ (リレーションを宣言しているアクティブ・レコード・クラスによって表されるデータ) のカラムであり、
@@ -854,6 +865,8 @@ class Order extends ActiveRecord
   続けて書く、ということです。ご覧のように、`customer_id` は `Order` のプロパティであり、
   `id` は`Customer` のプロパティです。
   
+> Warning: リレーション名としては `relation` は予約済みで使えません。これを使うと `ArgumentCountError` となります。
+
 
 ### リレーショナル・データにアクセスする <span id="accessing-relational-data"></span>
 
@@ -922,7 +935,7 @@ class Customer extends ActiveRecord
 {
     public function getBigOrders($threshold = 100)
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id'])
+        return $this->hasMany(Order::class, ['customer_id' => 'id'])
             ->where('subtotal > :threshold', [':threshold' => $threshold])
             ->orderBy('id');
     }
@@ -943,7 +956,7 @@ $orders = $customer->bigOrders;
 ### 中間テーブルによるリレーション <span id="junction-table"></span>
 
 データベースの設計において、二つの関連するテーブル間の多重性が多対多である場合は、通常、
-[中間テーブル](https://en.wikipedia.org/wiki/Junction_table) が導入されます。
+[中間テーブル](https://ja.wikipedia.org/wiki/%E9%80%A3%E6%83%B3%E3%82%A8%E3%83%B3%E3%83%86%E3%82%A3%E3%83%86%E3%82%A3) が導入されます。
 例えば、`order` テーブルと `item` テーブルは、`order_item` と言う名前の中間テーブルによって関連付けることが出来ます。
 このようにすれば、一つの注文を複数の商品に対応させ、また、一つの商品を複数の注文に対応させることが出来ます。
 
@@ -957,7 +970,7 @@ class Order extends ActiveRecord
 {
     public function getItems()
     {
-        return $this->hasMany(Item::className(), ['id' => 'item_id'])
+        return $this->hasMany(Item::class, ['id' => 'item_id'])
             ->viaTable('order_item', ['order_id' => 'id']);
     }
 }
@@ -970,12 +983,12 @@ class Order extends ActiveRecord
 {
     public function getOrderItems()
     {
-        return $this->hasMany(OrderItem::className(), ['order_id' => 'id']);
+        return $this->hasMany(OrderItem::class, ['order_id' => 'id']);
     }
 
     public function getItems()
     {
-        return $this->hasMany(Item::className(), ['id' => 'item_id'])
+        return $this->hasMany(Item::class, ['id' => 'item_id'])
             ->via('orderItems');
     }
 }
@@ -1009,21 +1022,21 @@ class Customer extends ActiveRecord
     public function getPurchasedItems()
     {
         // 顧客の購入品目、すなわち、`Item` の 'id' カラムが OrderItem の 'item_id' に合致するもの
-        return $this->hasMany(Item::className(), ['id' => 'item_id'])
+        return $this->hasMany(Item::class, ['id' => 'item_id'])
                     ->via('orderItems');
     }
 
     public function getOrderItems()
     {
         // 顧客の OrderItems、すなわち、`Order` の `id` カラムが `OrderItem` の 'order_id' に合致するもの
-        return $this->hasMany(OrderItem::className(), ['order_id' => 'id'])
+        return $this->hasMany(OrderItem::class, ['order_id' => 'id'])
                     ->via('orders');
     }
 
     public function getOrders()
     {
         // 顧客の注文
-        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 }
 ```
@@ -1149,7 +1162,7 @@ $customers = Customer::find()->with([
 > ```
 
 
-### リレーションを使ってテーブルを結合する <a name="joining-with-relations">
+### リレーションを使ってテーブルを結合する <span id="joining-with-relations"></span>
 
 > Note: この項で説明されていることは、MySQL、PostgreSQL など、
   リレーショナル・データベースに対してのみ適用されます。
@@ -1276,7 +1289,7 @@ class Customer extends ActiveRecord
 {
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 }
 
@@ -1284,7 +1297,7 @@ class Order extends ActiveRecord
 {
     public function getCustomer()
     {
-        return $this->hasOne(Customer::className(), ['id' => 'customer_id']);
+        return $this->hasOne(Customer::class, ['id' => 'customer_id']);
     }
 }
 ```
@@ -1318,7 +1331,7 @@ class Customer extends ActiveRecord
 {
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id'])->inverseOf('customer');
+        return $this->hasMany(Order::class, ['customer_id' => 'id'])->inverseOf('customer');
     }
 }
 ```
@@ -1429,7 +1442,7 @@ class Customer extends \yii\db\ActiveRecord
     public function getComments()
     {
         // Customer は多くの Comment を持つ
-        return $this->hasMany(Comment::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Comment::class, ['customer_id' => 'id']);
     }
 }
 
@@ -1444,7 +1457,7 @@ class Comment extends \yii\mongodb\ActiveRecord
     public function getCustomer()
     {
         // Comment は 一つの Customer を持つ
-        return $this->hasOne(Customer::className(), ['id' => 'customer_id']);
+        return $this->hasOne(Customer::class, ['id' => 'customer_id']);
     }
 }
 
@@ -1528,7 +1541,7 @@ class Customer extends \yii\db\ActiveRecord
 {
     public function getActiveComments()
     {
-        return $this->hasMany(Comment::className(), ['customer_id' => 'id'])->active();
+        return $this->hasMany(Comment::class, ['customer_id' => 'id'])->active();
     }
 }
 
@@ -1539,7 +1552,7 @@ class Customer extends \yii\db\ActiveRecord
 {
     public function getComments()
     {
-        return $this->hasMany(Comment::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Comment::class, ['customer_id' => 'id']);
     }
 }
 
@@ -1605,7 +1618,7 @@ class Customer extends \yii\db\ActiveRecord
 
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 }
 ```
@@ -1700,7 +1713,7 @@ class Customer extends \yii\db\ActiveRecord
 
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 }
 ```
@@ -1731,7 +1744,7 @@ class Customer extends \yii\db\ActiveRecord
      */
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 
     /**

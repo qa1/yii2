@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\console\controllers;
@@ -186,4 +186,11 @@ class DbMessageControllerTest extends BaseMessageControllerTest
         $this->assertArrayHasKey($obsoleteMessage, $messages, "Obsolete message should not be removed. Command output:\n\n" . $out);
         $this->assertEquals($obsoleteTranslation, $messages[$obsoleteMessage], "Obsolete message was not marked properly. Command output:\n\n" . $out);
     }
+
+    public function testMessagesSorting()
+    {
+        $this->markTestSkipped('There\'s no need to order messages for database');
+    }
+
+
 }

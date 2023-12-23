@@ -11,17 +11,23 @@ DAO提供了简单高效的SQL查询，可以用在与数据库交互的各个�
 
 Yii DAO 支持下列现成的数据库：
 
-- [MySQL](http://www.mysql.com/)
+- [MySQL](https://www.mysql.com/)
 - [MariaDB](https://mariadb.com/)
-- [SQLite](http://sqlite.org/)
-- [PostgreSQL](http://www.postgresql.org/): 版本 8.4 或更高
-- [CUBRID](http://www.cubrid.org/): 版本 9.3 或更高。
-- [Oracle](http://www.oracle.com/us/products/database/overview/index.html)
-- [MSSQL](https://www.microsoft.com/en-us/sqlserver/default.aspx): 版本 2008 或更高。
+- [SQLite](https://sqlite.org/)
+- [PostgreSQL](https://www.postgresql.org/)：版本 8.4 或更高
+- [CUBRID](https://www.cubrid.org/)：版本 9.3 或更高。
+- [Oracle](https://www.oracle.com/database/)
+- [MSSQL](https://www.microsoft.com/en-us/sqlserver/default.aspx)：版本 2008 或更高。
 
-> Note: New version of pdo_oci for PHP 7 currently exists only as the source code. Follow
-  [instruction provided by community](https://github.com/yiisoft/yii2/issues/10975#issuecomment-248479268)
-  to compile it or use [PDO emulation layer](https://github.com/taq/pdooci).
+> Info: 在Yii 2.1及更高版本中，DAO 支持 CUBRID，Oracle 和 MSSQL
+  不再作为框架的内置核心组件提供。它们必须作为独离的 [扩展](structure-extensions.md) 安装。
+  [yiisoft/yii2-oracle](https://www.yiiframework.com/extension/yiisoft/yii2-oracle) 和
+  [yiisoft/yii2-mssql](https://www.yiiframework.com/extension/yiisoft/yii2-mssql) 都属于
+  [官方扩展](https://www.yiiframework.com/extensions/official)。
+
+> Note: 供 PHP 7 使用的新版 pdo_oci 扩展目前仅发布了源代码，如果你想编译使用请参照 
+  [社区用户提供的编译安装指引](https://github.com/yiisoft/yii2/issues/10975#issuecomment-248479268)。
+  或者你也可以在你的应用中使用 [PDO模拟层](https://github.com/taq/pdooci)。
 
 ## 创建数据库连接（Creating DB Connections） <span id="creating-db-connections"></span>
 
@@ -62,7 +68,7 @@ return [
 
 配置数据库连接时， 你应该总是通过 [[yii\db\Connection::dsn|dsn]] 属性来指明它的数据源名称 (DSN) 。
 不同的数据库有着不同的 DSN 格式。
-请参考 [PHP manual](http://www.php.net/manual/en/function.PDO-construct.php) 来获得更多细节。下面是一些例子：
+请参考 [PHP manual](https://www.php.net/manual/zh/pdo.construct.php) 来获得更多细节。下面是一些例子：
  
 * MySQL, MariaDB: `mysql:host=localhost;dbname=mydatabase`
 * SQLite: `sqlite:/path/to/database/file`
@@ -178,7 +184,7 @@ $post = Yii::$app->db->createCommand('SELECT * FROM post WHERE id=:id AND status
            ->queryOne();
 ```
 
-绑定参数是通过 [预处理语句](http://php.net/manual/en/mysqli.quickstart.prepared-statements.php) 实现的。
+绑定参数是通过 [预处理语句](https://www.php.net/manual/zh/mysqli.quickstart.prepared-statements.php) 实现的。
 除了防止 SQL 注入攻击，它也可以通过一次预处理 SQL 语句，
 使用不同参数多次执行，来提升性能。例如：
 
@@ -263,7 +269,7 @@ Yii::$app->db->createCommand()->batchInsert('user', ['name', 'age'], [
 ```php
 Yii::$app->db->createCommand()->upsert('pages', [
     'name' => 'Front page',
-    'url' => 'http://example.com/', // url is unique
+    'url' => 'https://example.com/', // url is unique
     'visits' => 0,
 ], [
     'visits' => new \yii\db\Expression('visits + 1'),
@@ -415,7 +421,7 @@ Yii 为四个最常用的隔离级别提供了常量：
 因此，你不能在开启事务时直接指定隔离级别。
 你必须在事务开始后再调用 [[yii\db\Transaction::setIsolationLevel()]]。
 
-[隔离级别]: http://en.wikipedia.org/wiki/Isolation_%28database_systems%29#Isolation_levels
+[隔离级别]: https://zh.wikipedia.org/wiki/%E4%BA%8B%E5%8B%99%E9%9A%94%E9%9B%A2#.E9.9A.94.E7.A6.BB.E7.BA.A7.E5.88.AB
 
 
 ### 嵌套事务（Nesting Transactions） <span id="nesting-transactions"></span>
@@ -465,7 +471,7 @@ try {
 
 ## 复制和读写分离（Replication and Read-Write Splitting） <span id="read-write-splitting"></span>
 
-许多数据库支持[数据库复制](http://en.wikipedia.org/wiki/Replication_(computing)#Database_replication)来获得更好的数据库可用性，
+许多数据库支持[数据库复制](https://en.wikipedia.org/wiki/Replication_(computing)#Database_replication)来获得更好的数据库可用性，
 以及更快的服务器响应时间。通过数据库复制功能，
 数据从所谓的主服务器被复制到从服务器。所有的写和更新必须发生在主服务器上，
 而读可以发生在从服务器上。

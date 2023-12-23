@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\console\controllers;
@@ -121,5 +121,51 @@ class PHPMessageControllerTest extends BaseMessageControllerTest
         $head = substr($content, 0, strpos($content, 'return '));
         $expected = "<?php\n/*file header*/\n/*doc block*/\n";
         $this->assertEqualsWithoutLE($expected, $head);
+    }
+
+    public function messageFileCategoriesDataProvider(){
+        return [
+            'removeUnused:false - unused category should not be removed - normal category' => ['test_delete_category', true, false, true],
+            'removeUnused:false - unused category should not be removed - nested category' => ['nested/category', true, false, true],
+            'removeUnused:false - unused category should not be removed - nested 3 level category' => ['multi-level/nested/category', true, false, true],
+
+            'removeUnused:false - used category should not be removed - normal category' => ['test_delete_category', false, false, true],
+            'removeUnused:false - used category should not be removed - nested category' => ['nested/category', false, false, true],
+            'removeUnused:false - used category should not be removed - nested 3 level category' => ['multi-level/nested/category', false, false, true],
+
+            'removeUnused:true - used category should not be removed - normal category' => ['test_delete_category', false, true, true],
+            'removeUnused:true - used category should not be removed - nested category' => ['nested/category', false, true, true],
+            'removeUnused:true - used category should not be removed - nested 3 level category' => ['multi-level/nested/category', false, true, true],
+
+            'removeUnused:true - unused category should be removed - normal category' => ['test_delete_category', true, true, false],
+            'removeUnused:true - unused category should be removed - nested category' => ['nested/category', true, true, false],
+            'removeUnused:true - unused category should be removed - nested 3 level category' => ['multi-level/nested/category', true, true, false],
+        ];
+    }
+
+    /**
+     * @dataProvider messageFileCategoriesDataProvider
+     */
+    public function testRemoveUnusedBehavior($category, $isUnused, $removeUnused, $isExpectedToExist)
+    {
+        $this->saveMessages(['test message' => 'test translation'], $category);
+        $filePath = $this->getMessageFilePath($category);
+
+        $this->saveConfigFile($this->getConfig([
+            'removeUnused' => $removeUnused,
+        ]));
+
+        if (!$isUnused) {
+            $message = 'test message';
+            $sourceFileContent = "Yii::t('{$category}', '{$message}');";
+            $this->createSourceFile($sourceFileContent);
+        }
+
+        $this->runMessageControllerAction('extract', [$this->configFileName]);
+        if ($isExpectedToExist) {
+            $this->assertFileExists($filePath);
+        } else {
+            $this->assertFileNotExists($filePath);
+        }
     }
 }

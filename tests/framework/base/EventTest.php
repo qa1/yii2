@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\base;
@@ -89,6 +89,55 @@ class EventTest extends TestCase
         $this->assertTrue(Event::hasHandlers(User::className(), 'save'));
         $this->assertTrue(Event::hasHandlers(ActiveRecord::className(), 'save'));
         $this->assertTrue(Event::hasHandlers('yiiunit\framework\base\SomeInterface', SomeInterface::EVENT_SUPER_EVENT));
+    }
+
+    /**
+     * @see https://github.com/yiisoft/yii2/issues/17336
+     */
+    public function testHasHandlersWithWildcard()
+    {
+        Event::on('\yiiunit\framework\base\*', 'save.*', function ($event) {
+            // do nothing
+        });
+
+        $this->assertTrue(Event::hasHandlers('yiiunit\framework\base\SomeInterface', 'save.it'), 'save.it');
+    }
+
+    /**
+     * @see https://github.com/yiisoft/yii2/issues/17300
+     */
+    public function testRunHandlersWithWildcard()
+    {
+        $triggered = false;
+
+        Event::on('\yiiunit\framework\base\*', 'super*', function ($event) use (&$triggered) {
+            $triggered = true;
+        });
+
+        // instance-level
+        $this->assertFalse($triggered);
+        $someClass = new SomeClass();
+        $someClass->emitEvent();
+        $this->assertTrue($triggered);
+
+        // reset
+        $triggered = false;
+
+        // class-level
+        $this->assertFalse($triggered);
+        Event::trigger(SomeClass::className(), 'super.test');
+        $this->assertTrue($triggered);
+    }
+
+    /**
+     * @see https://github.com/yiisoft/yii2/issues/17377
+     */
+    public function testNoFalsePositivesWithHasHandlers()
+    {
+        $this->assertFalse(Event::hasHandlers(new \stdClass(), 'foobar'));
+
+        $component = new Component();
+        $this->assertFalse($component->hasEventHandlers('foobar'));
     }
 
     public function testOffUnmatchedHandler()

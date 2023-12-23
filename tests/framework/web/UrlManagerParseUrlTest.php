@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\web;
@@ -342,7 +342,7 @@ class UrlManagerParseUrlTest extends TestCase
                 ],
             ],
         ], \yii\web\Application::className());
-        $this->assertEquals('/app/post/delete?id=123', $manager->createUrl(['post/delete', 'id' => 123]));
+        $this->assertEquals('/app/post/123', $manager->createUrl(['post/delete', 'id' => 123]));
         $this->destroyApplication();
 
         unset($_SERVER['REQUEST_METHOD']);
@@ -433,5 +433,33 @@ class UrlManagerParseUrlTest extends TestCase
                 'cache' => $arrayCache,
             ]);
         }
+    }
+
+    /**
+     * Test a scenario where catch-all rule is used at the end for a CMS but module names should use the module actions and controllers.
+     */
+    public function testModuleRoute()
+    {
+        $modules = 'user|my-admin';
+
+        $manager = $this->getUrlManager([
+            'rules' => [
+                "<module:$modules>" => '<module>',
+                "<module:$modules>/<controller>" => '<module>/<controller>',
+                "<module:$modules>/<controller>/<action>" => '<module>/<controller>/<action>',
+                '<url:[a-zA-Z0-9-/]+>' => 'site/index',
+            ],
+        ]);
+
+        $result = $manager->parseRequest($this->getRequest('user'));
+        $this->assertEquals(['user', []], $result);
+        $result = $manager->parseRequest($this->getRequest('user/somecontroller'));
+        $this->assertEquals(['user/somecontroller', []], $result);
+        $result = $manager->parseRequest($this->getRequest('user/somecontroller/someaction'));
+        $this->assertEquals(['user/somecontroller/someaction', []], $result);
+
+        $result = $manager->parseRequest($this->getRequest('users/somecontroller/someaction'));
+        $this->assertEquals(['site/index', ['url' => 'users/somecontroller/someaction']], $result);
+
     }
 }

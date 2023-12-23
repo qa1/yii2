@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\validators;
@@ -303,7 +303,7 @@ class IpValidatorTest extends TestCase
         $this->assertTrue($validator->validate('8.8.8.8'));
 
         $validator->subnet = null;
-        $validator->ranges = ['10.0.1.0/24', '2001:db0:1:2::/64', 'localhost', '!all'];
+        $validator->ranges = ['10.0.1.0/24', '2001:db0:1:2::/64', 'localhost', '!any'];
         $this->assertTrue($validator->validate('10.0.1.2'));
         $this->assertTrue($validator->validate('2001:db0:1:2::7'));
         $this->assertTrue($validator->validate('127.0.0.1'));

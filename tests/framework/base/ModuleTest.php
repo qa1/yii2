@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\base;
@@ -24,11 +24,35 @@ class ModuleTest extends TestCase
         $this->mockApplication();
     }
 
-    public function testControllerPath()
+    public function testTrueParentModule()
+    {
+        $parent = new Module('parent');
+        $child = new Module('child');
+        $child2 = new Module('child2');
+
+        $parent->setModule('child', $child);
+        $parent->setModules(['child2' => $child2]);
+
+        $this->assertEquals('parent', $child->module->id);
+        $this->assertEquals('parent', $child2->module->id);
+    }
+
+    public function testGetControllerPath()
     {
         $module = new TestModule('test');
+        $controllerPath = __DIR__ . DIRECTORY_SEPARATOR . 'controllers';
+
         $this->assertEquals('yiiunit\framework\base\controllers', $module->controllerNamespace);
-        $this->assertEquals(__DIR__ . DIRECTORY_SEPARATOR . 'controllers', str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $module->controllerPath));
+        $this->assertEquals($controllerPath, str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $module->getControllerPath()));
+    }
+
+    public function testSetControllerPath()
+    {
+        $module = new TestModule('test');
+        $controllerPath = __DIR__ . DIRECTORY_SEPARATOR . 'controllers';
+
+        $module->setControllerPath($controllerPath);
+        $this->assertEquals($controllerPath, $module->getControllerPath());
     }
 
     public function testSetupVersion()
@@ -146,6 +170,49 @@ class ModuleTest extends TestCase
 
         $route = 'very---complex---name---test';
         $this->assertNotInstanceOf(VeryComplexNameTestController::className(), $module->createControllerByID($route));
+    }
+
+    public function testCreateController()
+    {
+        // app module has a submodule "base" which has two controllers: "default" and "other"
+        $module = new Module('app');
+        $module->setModule('base', new Module('base'));
+        $defaultController = ['class' => 'yii\web\Controller'];
+        $otherController = ['class' => 'yii\web\Controller'];
+        $module->getModule('base')->controllerMap = [
+            'default' => $defaultController,
+            'other' => $otherController,
+        ];
+
+        list($controller, $action) = $module->createController('base');
+        $this->assertSame('', $action);
+        $this->assertSame('app/base/default', $controller->uniqueId);
+
+        list($controller, $action) = $module->createController('base/default');
+        $this->assertSame('', $action);
+        $this->assertSame('app/base/default', $controller->uniqueId);
+
+        list($controller, $action) = $module->createController('base/other');
+        $this->assertSame('', $action);
+        $this->assertSame('app/base/other', $controller->uniqueId);
+
+        list($controller, $action) = $module->createController('base/default/index');
+        $this->assertSame('index', $action);
+        $this->assertSame('app/base/default', $controller->uniqueId);
+
+        list($controller, $action) = $module->createController('base/other/index');
+        $this->assertSame('index', $action);
+        $this->assertSame('app/base/other', $controller->uniqueId);
+
+        list($controller, $action) = $module->createController('base/other/someaction');
+        $this->assertSame('someaction', $action);
+        $this->assertSame('app/base/other', $controller->uniqueId);
+
+        $controller = $module->createController('bases/default/index');
+        $this->assertFalse($controller);
+
+        $controller = $module->createController('nocontroller');
+        $this->assertFalse($controller);
     }
 }
 

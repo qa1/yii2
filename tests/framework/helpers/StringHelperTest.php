@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yiiunit\framework\helpers;
@@ -104,7 +104,7 @@ class StringHelperTest extends TestCase
         $this->assertEquals('file', StringHelper::basename('/path/to/filete\st', 'te\st'));
         $this->assertEquals('st', StringHelper::basename('/path/to/filete\st', 'te/st'));
 
-        // http://www.php.net/manual/en/function.basename.php#72254
+        // https://www.php.net/manual/en/function.basename.php#72254
         $this->assertEquals('foo', StringHelper::basename('/bar/foo/'));
         $this->assertEquals('foo', StringHelper::basename('\\bar\\foo\\'));
     }
@@ -429,10 +429,17 @@ class StringHelperTest extends TestCase
         return [
             ['foo', 'Foo'],
             ['foo bar', 'Foo Bar'],
+            ['!foo bar-baz', '!foo Bar-baz'],
+            [' foo BAR', ' Foo BAR'],
+            [' ! foo BAR', ' ! Foo BAR'],
+            ["\tfoo\nbar  baz", "\tFoo\nBar  Baz"],
             ['👍🏻 foo bar', '👍🏻 Foo Bar'],
             ['', ''],
+            ['0', '0'],
             [null, ''],
             ['здесь我 multibyte我 строка', 'Здесь我 Multibyte我 Строка'],
+            ['p0 upload', 'P0 Upload'],
+            ['p5 upload', 'P5 Upload'],
         ];
     }
 
@@ -444,5 +451,89 @@ class StringHelperTest extends TestCase
     public function testMb_ucwords($string, $expectedResult)
     {
         $this->assertSame($expectedResult, StringHelper::mb_ucwords($string));
+    }
+
+    /**
+     * @param string $string
+     * @param string $expectedResult
+     * @dataProvider dataProviderDirname
+     */
+    public function testDirname($string, $expectedResult)
+    {
+        $this->assertSame($expectedResult, StringHelper::dirname($string));
+    }
+
+    public function dataProviderDirname()
+    {
+        return [
+            ['\\foo\\bar\\test', '\foo\bar'],
+            ['\\foo/bar\\test', '\foo/bar'],
+            ['\\foo\\bar\\test\\', '\foo\bar'],
+            ['foo/bar/test', 'foo/bar'],
+            ['foo', ''],
+            ['', ''],
+        ];
+    }
+
+    public function testMask()
+    {
+        // Standard masking
+        $this->assertSame('12******90', StringHelper::mask('1234567890', 2, 6));
+        $this->assertSame('a********j', StringHelper::mask('abcdefghij', 1, 8));
+        $this->assertSame('*************', StringHelper::mask('Hello, World!', 0, 13));
+        $this->assertSame('************!', StringHelper::mask('Hello, World!', 0, 12));
+        $this->assertSame('Hello, *orld!', StringHelper::mask('Hello, World!', 7, 1));
+        $this->assertSame('Saleh Hashemi', StringHelper::mask('Saleh Hashemi', 0, 0));
+
+        // Different Mask Character
+        $this->assertSame('12######90', StringHelper::mask('1234567890', 2, 6, '#'));
+
+        // Positions outside the string
+        $this->assertSame('1234567890', StringHelper::mask('1234567890', 20, 6));
+        $this->assertSame('1234567890', StringHelper::mask('1234567890', -20, 6));
+
+        // Negative values for start
+        $this->assertSame('1234****90', StringHelper::mask('1234567890', -6, 4));
+
+        // type-related edge case
+        $this->assertSame('1234****90', StringHelper::mask(1234567890, -6, 4));
+
+        // Multibyte characters
+        $this->assertSame('你**', StringHelper::mask('你好吗', 1, 2));
+        $this->assertSame('你好吗', StringHelper::mask('你好吗', 4, 2));
+
+        // Special characters
+        $this->assertSame('em**l@email.com', StringHelper::mask('email@email.com', 2, 2));
+        $this->assertSame('******email.com', StringHelper::mask('email@email.com', 0, 6));
+    }
+
+    /**
+     * @param string $string
+     * @param string $start
+     * @param string $end
+     * @param string $expectedResult
+     * @dataProvider dataProviderFindBetween
+     */
+    public function testFindBetween($string, $start, $end, $expectedResult)
+    {
+        $this->assertSame($expectedResult, StringHelper::findBetween($string, $start, $end));
+    }
+
+    public function dataProviderFindBetween()
+    {
+        return [
+            ['hello world hello', ' hello', ' world', null],  // end before start
+            ['This is a sample string', ' is ', ' string', 'a sample'],  // normal case
+            ['startendstart', 'start', 'end', ''],  // end before start
+            ['startmiddleend', 'start', 'end', 'middle'],  // normal case
+            ['startend', 'start', 'end', ''],  // end immediately follows start
+            ['multiple start start end end', 'start ', ' end', 'start end'],  // multiple starts and ends
+            ['', 'start', 'end', null],  // empty string
+            ['no delimiters here', 'start', 'end', null],  // no start and end
+            ['start only', 'start', 'end', null], // start found but no end
+            ['end only', 'start', 'end', null], // end found but no start
+            ['spécial !@#$%^&*()', 'spé', '&*()', 'cial !@#$%^'],  // Special characters
+            ['من صالح هاشمی هستم', 'من ', ' هستم', 'صالح هاشمی'], // other languages
+        ];
     }
 }

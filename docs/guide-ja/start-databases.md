@@ -23,6 +23,8 @@
 まず初めに、`yii2basic` という名前のデータベースを作成してください。このデータベースからアプリケーションにデータを読み出すことになります。
 Yii は多数のデータベース製品に対するサポートを内蔵しており、作成するデータベースは、SQLite、MySQL、PosttreSQL、MSSQL または Oracle から選ぶことが出来ます。以下の説明では、話を単純にするために、MySQL を前提とします。
 
+> Info: MariaDB は、かつては MySQL と差し替え可能な代替物でしたが、現在では完全にそうだとは言えません。MariaDB で `JSON` サポートのような高度な機能を使いたいときは、後述する MariaDB エスステンションの使用を検討して下さい。
+
 次に、データベースに `country` という名前のテーブルを作り、いくつかのサンプル・データを挿入します。そうするためには、次の SQL 文を実行することが出来ます。
 
 ```sql
@@ -49,7 +51,7 @@ INSERT INTO `country` VALUES ('US','United States',322976000);
 DB 接続を構成する <span id="configuring-db-connection"></span>
 -----------------
 
-先に進む前に、[PDO](http://www.php.net/manual/en/book.pdo.php) PHP 拡張および使用しているデータベースの PDO ドライバ
+先に進む前に、[PDO](https://www.php.net/manual/ja/book.pdo.php) PHP 拡張および使用しているデータベースの PDO ドライバ
 (例えば、MySQL のための `pdo_mysql`) の両方をインストール済みであることを確認してください。
 アプリケーションがリレーショナル・データベースを使う場合、これは基本的な必要条件です。
 
@@ -83,6 +85,7 @@ Yii がサポートを内蔵していないデータベースを扱う必要が�
 - [Informix](https://github.com/edgardmessias/yii2-informix)
 - [IBM DB2](https://github.com/edgardmessias/yii2-ibm-db2)
 - [Firebird](https://github.com/edgardmessias/yii2-firebird)
+- [MariaDB](https://github.com/sam-it/yii2-mariadb)
 
 
 アクティブ・レコードを作成する <span id="creating-active-record"></span>
@@ -175,8 +178,9 @@ class CountryController extends Controller
 
 上記のコードを `controllers/CountryController.php` というファイルに保存します。
 
-`index` アクションは `Country::find()` を呼び出します。このアクティブ・レコードのメソッドは DB クエリを構築して、`country` テーブルから全てのデータを読み出します。
-一回のリクエストで返される国の数を制限するために、クエリは [[yii\data\Pagination]] オブジェクトの助けを借りてページ付けされます。
+最初に `index` アクションは `Country::find()` を呼び出します。この [find()](https://www.yiiframework.com/doc/api/2.0/yii-db-activerecord#find()-detail) メソッドが `country` テーブルからデータを取得するメソッドを提供する [ActiveQuery](https://www.yiiframework.com/doc/api/2.0/yii-db-activequery) クエリ・オブジェクトオブジェクトを生成します。
+
+一回のリクエストで返される国の数を制限するために、クエリ・オブジェクトは [[yii\data\Pagination]] オブジェクトの助けを借りてページ付けされます。
 `Pagination` オブジェクトは二つの目的に奉仕します。
 
 * クエリによって表現される SQL 文に `offset` 句と `limit` 句をセットして、
@@ -184,8 +188,10 @@ class CountryController extends Controller
 * 次の項で説明されるように、一連のページ・ボタンからなるページャを
   ビューに表示するために使われます。
 
-コードの最後で、`index` アクションは `index` と言う名前のビューをレンダリングしています。
-このとき、国データだけでなく、そのページネーション情報がビューに渡されます。
+次に、[all()](https://www.yiiframework.com/doc/api/2.0/yii-db-activequery#all()-detail) メソッドがクエリ結果に基づいて全ての `country` レコードを返します。
+
+コードの最後で、`index` アクションは `index` と言う名前のビューをレンダリングします。
+このときに、返された国データとそのページネーション情報がビューに渡されます。
 
 
 ビューを作成する <span id="creating-view"></span>
@@ -225,7 +231,7 @@ use yii\widgets\LinkPager;
 上記のコード全てがどのように動作するかを見るために、ブラウザで下記の URL をアクセスします。
 
 ```
-http://hostname/index.php?r=country%2Findex
+https://hostname/index.php?r=country%2Findex
 ```
 
 ![国リスト](images/start-country-list.png)
@@ -235,7 +241,7 @@ http://hostname/index.php?r=country%2Findex
 注意深く観察すると、ブラウザの URL も次のように変ったことに気付くでしょう。
 
 ```
-http://hostname/index.php?r=country%2Findex&page=2
+https://hostname/index.php?r=country%2Findex&page=2
 ```
 
 舞台裏では、[[yii\data\Pagination|Pagination]] が、データ・セットをページ付けするのに必要な全ての機能を提供しています。
