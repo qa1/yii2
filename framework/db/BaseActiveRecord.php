@@ -680,6 +680,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * @param array|null $attributeNames list of attribute names that need to be saved. Defaults to null,
      * meaning all attributes that are loaded from DB will be saved.
      * @return bool whether the saving succeeded (i.e. no validation errors occurred).
+     * @throws Exception in case update or insert failed.
      */
     public function save($runValidation = true, $attributeNames = null)
     {
@@ -1780,9 +1781,15 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      */
     private function isValueDifferent($newValue, $oldValue)
     {
-        if (is_array($newValue) && is_array($oldValue) && ArrayHelper::isAssociative($oldValue)) {
-            $newValue = ArrayHelper::recursiveSort($newValue);
-            $oldValue = ArrayHelper::recursiveSort($oldValue);
+        if (is_array($newValue) && is_array($oldValue)) {
+            // Only sort associative arrays
+            $sorter = function (&$array) {
+                if (ArrayHelper::isAssociative($array)) {
+                    ksort($array);
+                }
+            };
+            $newValue = ArrayHelper::recursiveSort($newValue, $sorter);
+            $oldValue = ArrayHelper::recursiveSort($oldValue, $sorter);
         }
 
         return $newValue !== $oldValue;
@@ -1806,7 +1813,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * - active record instance represented by array (i.e. active record was loaded using [[ActiveQuery::asArray()]]).
      * @param string|array $relationNames the names of the relations of primary models to be loaded from database. See [[ActiveQueryInterface::with()]] on how to specify this argument.
      * @param bool $asArray whether to load each related model as an array or an object (if the relation itself does not specify that).
-     * @since 2.0.49
+     * @since 2.0.50
      */
     public static function loadRelationsFor(&$models, $relationNames, $asArray = false)
     {
@@ -1833,7 +1840,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      *
      * @param string|array $relationNames the names of the relations of this model to be loaded from database. See [[ActiveQueryInterface::with()]] on how to specify this argument.
      * @param bool $asArray whether to load each relation as an array or an object (if the relation itself does not specify that).
-     * @since 2.0.49
+     * @since 2.0.50
      */
     public function loadRelations($relationNames, $asArray = false)
     {
